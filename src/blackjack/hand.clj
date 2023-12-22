@@ -15,7 +15,10 @@
   (reset! deck (n-shuffled-decks 4)))
 
 (defn deal []
-  (first (swap! deck rest)))
+  (do (reset-deck!)
+      (first (swap! deck rest))
+      )
+  )
 
 (defn new-hand []
   [(deal)])

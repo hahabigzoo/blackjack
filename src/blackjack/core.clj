@@ -1,30 +1,29 @@
 (ns blackjack.core
-  (:require [blackjack.simple-hand :refer [deal new-hand up-card add-card total]]))
+  (:require [blackjack.hand :refer [deal new-hand up-card add-card total]]))
 
 (declare play-game)
 
 (defn stupid-strategy [hand opponent-up-card]
   (> opponent-up-card 5))
 
-(defn test-strategy
-  ([player-strategy house-strategy]
-     (test-strategy player-strategy house-strategy 100))
-  ([player-strategy house-strategy n]
-     "plays n games and returns how many times the player won"
-     ;; COMPLETE
-     ))
-
-(defn stop-at-17 [hand opponent-up-card]
-  ;; COMPLETE
-  )
-
 (defn stop-at [n]
   "Returns a strategy that twists until the total is n"
-  ;; COMPLETE
+  (fn [hand opponent-up-card] (< (total hand) n)))
+
+(defn stop-at-17 [hand opponent-up-card]
+  ((stop-at 17) hand opponent-up-card)
   )
 
 (defn watched [strategy]
-  ;; COMPLETE
+  (fn [hand opponent-up-card]
+    (let  [result (strategy hand opponent-up-card)]
+      (do
+        (println (str "hand:" hand))
+        (println (str "opponent-up-card:" opponent-up-card))
+        (println (str "strategy:" result))
+        result)
+      )
+    )
   )
 
 (defn smart-strategy [hand opponent-up-card]
@@ -62,3 +61,28 @@
               :else
               0 ; Player lost
               )))))
+
+
+(defn test-helper
+  [win cnt tot player-strategy house-strategy]
+  (let [result (play-game player-strategy house-strategy)]
+    (if (= cnt tot) 
+      (+ win result) 
+      (recur (+ win result) (inc cnt) tot player-strategy house-strategy))))
+
+(defn test-strategy
+  ([player-strategy house-strategy]
+   (test-strategy player-strategy house-strategy 100))
+  ([player-strategy house-strategy n]
+   "plays n games and returns how many times the player won"
+     (test-helper 0 1 n player-strategy house-strategy)
+   ))
+
+
+(defn -main
+  "I don't do a whole lot ... yet."
+  [& args]
+  (do
+    (println "Welcome to SICP Distilled")
+    (println (test-strategy (watched stop-at-17) stop-at-17 (Integer/parseInt (nth args 0))))
+    ))
